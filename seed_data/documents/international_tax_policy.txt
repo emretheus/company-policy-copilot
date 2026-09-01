@@ -1,0 +1,8 @@
+Title: International Tax Policy
+Effective: 2024-06-01
+
+Working remotely from a country outside the European Union may create tax
+and social security obligations for both the employee and the company.
+Any remote work arrangement outside the EU requires prior written approval
+from HR, regardless of duration. Remote work within the EU does not require
+this additional approval.

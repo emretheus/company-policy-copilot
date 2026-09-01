@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: policy-copilot-db
+    environment:
+      POSTGRES_USER: copilot
+      POSTGRES_PASSWORD: copilot
+      POSTGRES_DB: policy_copilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U copilot -d policy_copilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Containerized Ollama, disabled by default (opt in with
+  # `docker compose --profile containerized-llm up`). On macOS this has no
+  # GPU access and is far too slow to be usable; the API instead points at
+  # a natively-running Ollama on the host. On a Linux host with an NVIDIA
+  # GPU this service is the better option.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: policy-copilot-ollama
+    profiles: ["containerized-llm"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  api:
+    build: ./backend
+    container_name: policy-copilot-api
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://copilot:copilot@postgres:5432/policy_copilot
+      # Points at Ollama running natively on the host, not the `ollama`
+      # container below. On macOS, Docker has no access to the Metal GPU,
+      # so containerized inference falls back to CPU and is ~25x slower.
+      # Run `ollama serve` on the host (see README) for usable speed.
+      OLLAMA_BASE_URL: http://host.docker.internal:11435
+      OLLAMA_GENERATION_MODEL: llama3.2:3b
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./seed_data:/seed_data
+
+  # Disabled by default (opt in with `docker compose --profile containerized-ui up`).
+  # On macOS, npm installs and Next.js dev-server rebuilds over a bind mount are
+  # drastically slower than running natively. Run `npm run dev` in ./frontend
+  # instead -- see README.
+  frontend:
+    build: ./frontend
+    container_name: policy-copilot-frontend
+    profiles: ["containerized-ui"]
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  pgdata:
+  ollama_data:

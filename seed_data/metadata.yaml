@@ -1,0 +1,118 @@
+# Hand-authored seed metadata. In production, `supersedes` and access rules
+# are set by the document owner at ingestion time (see PLAN.md, "how does
+# supersedes get created") -- never inferred automatically. This file is the
+# MVP stand-in for that human-authored step.
+
+document_families:
+  - id: remote-work-de
+    title_base: "Remote Work Policy (Germany)"
+
+documents:
+  - key: remote_work_de_2025
+    file: remote_work_de_2025.txt
+    title: "Remote Work Policy (Germany) 2025"
+    family: remote-work-de
+    version_label: "2025"
+    effective_date: "2025-01-01"
+    supersedes: null
+    country: DE
+    access_rules:
+      - scope: all
+
+  - key: remote_work_de_2026
+    file: remote_work_de_2026.txt
+    title: "Remote Work Policy (Germany) 2026"
+    family: remote-work-de
+    version_label: "2026"
+    effective_date: "2026-01-01"
+    supersedes: remote_work_de_2025
+    country: DE
+    access_rules:
+      - scope: all
+
+  - key: international_tax_policy
+    file: international_tax_policy.txt
+    title: "International Tax Policy"
+    family: null
+    version_label: null
+    effective_date: "2024-06-01"
+    supersedes: null
+    country: null
+    access_rules:
+      - scope: all
+
+  - key: hr_remote_work_exceptions
+    file: hr_remote_work_exceptions.txt
+    title: "HR Internal Guideline — Remote Work Exceptions"
+    family: null
+    version_label: null
+    effective_date: "2026-01-01"
+    supersedes: null
+    country: null
+    access_rules:
+      - scope: department
+        department: HR
+
+  - key: general_travel_policy
+    file: general_travel_policy.txt
+    title: "General Travel Policy"
+    family: null
+    version_label: null
+    effective_date: "2023-01-01"
+    supersedes: null
+    country: null
+    access_rules:
+      - scope: all
+
+  - key: salary_bands_fy2026
+    file: salary_bands_fy2026.txt
+    title: "Salary Bands FY2026"
+    family: null
+    version_label: null
+    effective_date: "2026-01-01"
+    supersedes: null
+    country: null
+    access_rules:
+      - scope: department
+        department: HR
+
+document_relations:
+  - from: remote_work_de_2026
+    to: international_tax_policy
+    type: relates_to
+  - from: remote_work_de_2025
+    to: international_tax_policy
+    type: relates_to
+
+users:
+  - key: anna_employee
+    name: "Anna Employee"
+    email: "anna.employee@example.com"
+    role: Employee
+    department: Engineering
+    country: DE
+    manager: mark_manager
+
+  - key: mark_manager
+    name: "Mark Manager"
+    role: Manager
+    email: "mark.manager@example.com"
+    department: Engineering
+    country: DE
+    manager: null
+
+  - key: helena_hr
+    name: "Helena HR"
+    email: "helena.hr@example.com"
+    role: HR
+    department: HR
+    country: DE
+    manager: null
+
+  - key: felix_finance
+    name: "Felix Finance"
+    email: "felix.finance@example.com"
+    role: "Finance Admin"
+    department: Finance
+    country: FR
+    manager: null

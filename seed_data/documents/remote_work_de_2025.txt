@@ -1,0 +1,8 @@
+Title: Remote Work Policy (Germany)
+Version: 2025
+Effective: 2025-01-01
+
+Employees based in Germany may work remotely from abroad for up to 30 days
+per calendar year. Manager approval is required before departure. Employees
+must remain reachable during normal working hours and ensure a stable
+internet connection.

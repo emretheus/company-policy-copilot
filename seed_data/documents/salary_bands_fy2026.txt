@@ -1,0 +1,7 @@
+Title: Salary Bands FY2026
+Access: HR only
+
+Salary band content is intentionally omitted from this demo dataset. The
+existence of this document and its access restriction is the point: it
+proves department-based denial that has nothing to do with country or
+version logic.
