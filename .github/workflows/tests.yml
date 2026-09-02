@@ -1,0 +1,78 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: copilot
+          POSTGRES_PASSWORD: copilot
+          POSTGRES_DB: policy_copilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U copilot -d policy_copilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://copilot:copilot@localhost:5432/policy_copilot
+      # Retrieval and permission tests never call the LLM; embeddings for the
+      # seed data are stubbed below, so no Ollama instance is needed in CI.
+      OLLAMA_BASE_URL: http://localhost:11434
+      EMBEDDING_DIM: 768
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run migrations
+        run: alembic upgrade head
+
+      - name: Seed database (deterministic stub embeddings)
+        env:
+          SEED_DATA_DIR: ${{ github.workspace }}/seed_data
+          USE_STUB_EMBEDDINGS: "1"
+        run: python -m app.ingestion.seed
+
+      # The permission suite is the security gate: it asserts restricted
+      # documents stay out of a user's allowed set and out of retrieval
+      # results, including under adversarial phrasing. It compares document
+      # ids and access rules, so stub embeddings don't affect the outcome.
+      - name: Permission boundary tests
+        env:
+          USE_STUB_EMBEDDINGS: "1"
+        run: pytest tests/permission_tests.py -v
+
+      # Version resolution walks the `supersedes` graph -- pure SQL, no
+      # embeddings involved.
+      - name: Version resolution
+        env:
+          USE_STUB_EMBEDDINGS: "1"
+        run: pytest tests/retrieval_tests.py::test_superseded_2025_version_is_flagged_not_current -v
+
+      # Ranking-quality tests (which document comes back for a given
+      # question) and the golden set both need real embeddings and a live
+      # model, so they run locally rather than in CI. See docs/IMPLEMENTATION.md.

@@ -6,6 +6,7 @@ edges, and chunk+embed each document's content.
 Run with: python -m app.ingestion.seed
 """
 import hashlib
+import os
 from datetime import datetime
 
 import yaml
@@ -22,7 +23,9 @@ from app.models.models import (
 from app.ingestion.chunking import chunk_text
 from app.generation.ollama_client import embed
 
-SEED_DIR = "/seed_data"
+# Mounted at /seed_data by docker-compose; overridable so the same script
+# runs outside the container (e.g. in CI, from a repo checkout).
+SEED_DIR = os.environ.get("SEED_DATA_DIR", "/seed_data")
 
 
 def load_metadata():

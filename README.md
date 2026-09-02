@@ -1,5 +1,11 @@
 # Enterprise Policy Copilot
 
+[![tests](https://github.com/emretheus/company-policy-copilot/actions/workflows/tests.yml/badge.svg)](https://github.com/emretheus/company-policy-copilot/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL + pgvector](https://img.shields.io/badge/postgres-pgvector-336791.svg?logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
+[![no LangChain](https://img.shields.io/badge/no-LangChain-6ea8fe.svg)](#stack)
+
 A permission-aware RAG system for internal company policy questions — where **access control is enforced inside retrieval, not bolted on afterwards**, versions resolve automatically through a document graph, and the system abstains instead of guessing.
 
 The premise: in a policy assistant, a confidently wrong answer or a leaked salary document is worse than no answer at all. Everything below follows from that.
@@ -217,7 +223,15 @@ App → http://localhost:3000 · API docs → http://localhost:8000/docs
 docker exec -it policy-copilot-api pytest tests/ -v
 ```
 
-16 tests: permission boundaries (the security gate), retrieval quality and version resolution, plus an end-to-end golden set.
+16 tests across three suites:
+
+| Suite | Covers | Runs in CI |
+|---|---|---|
+| `permission_tests.py` | Restricted documents stay out of a user's allowed set *and* out of retrieval results, including under adversarial phrasing | ✅ |
+| `retrieval_tests.py` | Version resolution via `supersedes`, ranking quality, graph expansion | Version resolution only |
+| `golden_qa.py` | Full pipeline end to end, including generation and verification | ❌ needs a live model |
+
+CI runs against Postgres with deterministic stub embeddings, so it validates the permission boundary and version logic without needing a GPU. Ranking quality and the golden set depend on real embeddings and a running model, so they run locally.
 
 ---
 
@@ -236,3 +250,16 @@ The demo worth seeing first: ask **"Can I work remotely from Turkey for 30 days?
 | [`docs/PLAN.md`](./docs/PLAN.md) | System design — architecture, ingestion, RBAC/ABAC, permission-aware retrieval, versioning, conflict handling, abstention, evaluation, observability, scaling, security, and a 4-week MVP scope |
 | [`docs/IMPLEMENTATION.md`](./docs/IMPLEMENTATION.md) | Tech stack decisions with rationale, repo layout, data model, build order — and §4b, three problems that only surfaced once it was running |
 | [`docs/DEMO_SCENARIOS.md`](./docs/DEMO_SCENARIOS.md) | Seed documents, demo users, and the scripted walkthrough behind the UI's example prompts |
+
+---
+
+## Note on the data
+
+Every policy document in this repository is fictional, written for the demo. The
+scenario — a company with country-specific policies, superseded versions, and
+role-restricted documents — is modelled on how these systems work in practice,
+but no real organisation's content is included.
+
+## License
+
+MIT — see [`LICENSE`](./LICENSE).
