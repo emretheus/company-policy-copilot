@@ -1,7 +1,7 @@
 # Enterprise Policy Copilot
 
-[![tests](https://github.com/emretheus/company-policy-copilot/actions/workflows/tests.yml/badge.svg)](https://github.com/emretheus/company-policy-copilot/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![tests: 16 passing](https://img.shields.io/badge/tests-16%20passing-8fd19e.svg)](#tests)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL + pgvector](https://img.shields.io/badge/postgres-pgvector-336791.svg?logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![no LangChain](https://img.shields.io/badge/no-LangChain-6ea8fe.svg)](#stack)
@@ -231,7 +231,9 @@ docker exec -it policy-copilot-api pytest tests/ -v
 | `retrieval_tests.py` | Version resolution via `supersedes`, ranking quality, graph expansion | Version resolution only |
 | `golden_qa.py` | Full pipeline end to end, including generation and verification | ❌ needs a live model |
 
-CI runs against Postgres with deterministic stub embeddings, so it validates the permission boundary and version logic without needing a GPU. Ranking quality and the golden set depend on real embeddings and a running model, so they run locally.
+The workflow in [`.github/workflows/tests.yml`](./.github/workflows/tests.yml) runs the ✅ rows against Postgres with deterministic stub embeddings, validating the permission boundary and version logic without needing a GPU. Ranking quality and the golden set depend on real embeddings and a running model, so they stay local.
+
+> GitHub Actions is currently disabled on this account, so the workflow has not executed here — the 16-passing figure is from local runs.
 
 ---
 
